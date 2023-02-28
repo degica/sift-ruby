@@ -700,6 +700,46 @@ module Sift
       Response.new(response.body, response.code, response.response)
     end
 
+    def create_psp_merchant_profile(properties = {}, opts = {})
+      account_id = opts[:account_id] || @account_id
+      timeout = opts[:timeout] || @timeout
+      api_key = opts[:api_key] || @api_key
+
+      options = {
+        body: MultiJson.dump(delete_nils(properties)),
+        headers: {
+          'Content-type' => 'application/json',
+          'Authorization' => "Basic #{Base64.encode64(api_key)}",
+          'User-Agent' => user_agent
+        }
+      }
+      options.merge!(timeout: timeout) unless timeout.nil?
+
+      uri = API_ENDPOINT + Sift.psp_merchant_path(account_id)
+      response = self.class.post(uri, options)
+      Response.new(response.body, response.code, response.response)
+    end
+
+    def update_psp_merchant_profile(merchant_id, properties = {}, opts = {})
+      account_id = opts[:account_id] || @account_id
+      timeout = opts[:timeout] || @timeout
+      api_key = opts[:api_key] || @api_key
+
+      options = {
+        body: MultiJson.dump(delete_nils(properties)),
+        headers: {
+          'Content-type' => 'application/json',
+          'Authorization' => "Basic #{Base64.encode64(api_key)}",
+          'User-Agent' => user_agent
+        }
+      }
+      options.merge!(timeout: timeout) unless timeout.nil?
+
+      uri = API_ENDPOINT + Sift.psp_merchant_id_path(account_id, merchant_id)
+      response = self.class.put(uri, options)
+      Response.new(response.body, response.code, response.response)
+    end
+
     def decisions(opts = {})
       decision_instance.list(opts)
     end

@@ -56,6 +56,16 @@ module Sift
       "/content/#{ERB::Util.url_encode(content_id)}/decisions"
   end
 
+  def self.psp_merchant_path(account_id)
+    "/v3/accounts/#{ERB::Util.url_encode(account_id)}" \
+      '/psp_management/merchants'
+  end
+
+  def self.psp_merchant_id_path(account_id, merchant_id)
+    "/v3/accounts/#{ERB::Util.url_encode(account_id)}" \
+      "/psp_management/merchants/#{ERB::Util.url_encode(merchant_id)}"
+  end
+
   # Module-scoped public API key
   class << self
     attr_accessor :api_key
