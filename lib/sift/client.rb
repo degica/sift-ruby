@@ -201,6 +201,9 @@ module Sift
     #
     #   :path::
     #     Overrides the URI path for this API call.
+    # 
+    #   :include_score_percentiles::
+    #     include_score_percentiles(optional) : Whether to add new parameter in the query parameter.
     #
     # ==== Returns:
     #
@@ -219,6 +222,7 @@ module Sift
       return_route_info = opts[:return_route_info]
       force_workflow_run = opts[:force_workflow_run]
       abuse_types = opts[:abuse_types]
+      include_score_percentiles = opts[:include_score_percentiles]
 
       raise("event must be a non-empty string") if (!event.is_a? String) || event.empty?
       raise("properties cannot be empty") if properties.empty?
@@ -231,6 +235,9 @@ module Sift
       query["return_route_info"] = "true" if return_route_info
       query["force_workflow_run"] = "true" if force_workflow_run
       query["abuse_types"] = abuse_types.join(",") if abuse_types
+      if include_score_percentiles == "true"
+        query["fields"] =  "SCORE_PERCENTILES"
+      end
 
       options = {
         :body => MultiJson.dump(delete_nils(properties).merge({"$type" => event,
@@ -271,6 +278,9 @@ module Sift
     #
     #   :version::
     #     Overrides the version of the Events API to call.
+    # 
+    #   :include_score_percentiles::
+    #     include_score_percentiles(optional) : Whether to add new parameter in the query parameter.
     #
     # ==== Returns:
     #
@@ -282,6 +292,7 @@ module Sift
       api_key = opts[:api_key] || @api_key
       timeout = opts[:timeout] || @timeout
       version = opts[:version] || @version
+      include_score_percentiles = opts[:include_score_percentiles]
 
       raise("user_id must be a non-empty string") if (!user_id.is_a? String) || user_id.to_s.empty?
       raise("Bad api_key parameter") if api_key.empty?
@@ -289,6 +300,9 @@ module Sift
       query = {}
       query["api_key"] = api_key
       query["abuse_types"] = abuse_types.join(",") if abuse_types
+      if include_score_percentiles == "true"
+        query["fields"] =  "SCORE_PERCENTILES"
+      end
 
       options = {
         :headers => {"User-Agent" => user_agent},
@@ -328,6 +342,9 @@ module Sift
     #
     #   :timeout::
     #     Overrides the timeout (in seconds) for this call.
+    # 
+    #   :include_score_percentiles::
+    #     include_score_percentiles(optional) : Whether to add new parameter in the query parameter.
     #
     # ==== Returns:
     #
@@ -338,6 +355,7 @@ module Sift
       abuse_types = opts[:abuse_types]
       api_key = opts[:api_key] || @api_key
       timeout = opts[:timeout] || @timeout
+      include_score_percentiles = opts[:include_score_percentiles]
 
       raise("user_id must be a non-empty string") if (!user_id.is_a? String) || user_id.to_s.empty?
       raise("Bad api_key parameter") if api_key.empty?
@@ -345,6 +363,9 @@ module Sift
       query = {}
       query["api_key"] = api_key
       query["abuse_types"] = abuse_types.join(",") if abuse_types
+      if include_score_percentiles == "true"
+        query["fields"] =  "SCORE_PERCENTILES"
+      end
 
       options = {
         :headers => {"User-Agent" => user_agent},
@@ -755,6 +776,176 @@ module Sift
     def apply_decision!(configs = {})
       handle_response(apply_decision(configs))
     end
+
+    def build_default_headers_post(api_key)
+      {
+        "Authorization" => "Basic #{Base64.encode64(api_key+":")}",
+        "User-Agent" => "SiftScience/v#{@version} sift-ruby/#{VERSION}",
+        "Content-Type" => "application/json"
+      }
+    end
+
+    def verification_send(properties = {}, opts = {})
+      api_key = opts[:api_key] || @api_key
+      version = opts[:version] || @version
+      timeout = opts[:timeout] || @timeout
+
+      raise("properties cannot be empty") if properties.empty?
+      raise("api_key cannot be empty") if api_key.empty?
+
+
+      options = {
+        :body => MultiJson.dump(delete_nils(properties)),
+        :headers => build_default_headers_post(api_key)
+      }
+      options.merge!(:timeout => timeout) unless timeout.nil?
+
+      response = self.class.post(Sift.verification_api_send_path(@version), options)
+      Response.new(response.body, response.code, response.response)
+    end
+
+    def verification_resend(properties = {}, opts = {})
+      api_key = opts[:api_key] || @api_key
+      version = opts[:version] || @version
+      timeout = opts[:timeout] || @timeout
+
+      raise("properties cannot be empty") if properties.empty?
+      raise("api_key cannot be empty") if api_key.empty?
+
+
+      options = {
+        :body => MultiJson.dump(delete_nils(properties)),
+        :headers => build_default_headers_post(api_key)
+      }
+      options.merge!(:timeout => timeout) unless timeout.nil?
+
+      response = self.class.post(Sift.verification_api_resend_path(@version), options)
+      Response.new(response.body, response.code, response.response)
+    end
+
+    def verification_check(properties = {}, opts = {})
+      api_key = opts[:api_key] || @api_key
+      version = opts[:version] || @version
+      timeout = opts[:timeout] || @timeout
+
+      raise("properties cannot be empty") if properties.empty?
+      raise("api_key cannot be empty") if api_key.empty?
+
+
+      options = {
+        :body => MultiJson.dump(delete_nils(properties)),
+        :headers => build_default_headers_post(api_key)
+      }
+      options.merge!(:timeout => timeout) unless timeout.nil?
+
+      response = self.class.post(Sift.verification_api_check_path(@version), options)
+      Response.new(response.body, response.code, response.response)
+    end
+
+    def create_psp_merchant_profile(properties = {}, opts = {})
+      # Create a new PSP Merchant profile
+      # Args:
+      #   properties: A dict of merchant profile data.
+      # Returns
+      #   A sift.client.Response object if the call succeeded, else raises an ApiException
+
+      account_id = opts[:account_id] || @account_id
+      api_key = opts[:api_key] || @api_key
+      timeout = opts[:timeout] || @timeout
+
+      raise("api_key cannot be empty") if api_key.empty?
+      raise("account_id cannot be empty") if account_id.empty?
+      raise("properties cannot be empty") if properties.empty?
+
+      options = {
+        :body => MultiJson.dump(delete_nils(properties)),
+        :headers => { "User-Agent" => user_agent, "Content-Type" => "application/json" },
+        :basic_auth => { :username => api_key, :password => "" }
+      }
+      options.merge!(:timeout => timeout) unless timeout.nil?
+      response = self.class.post(API_ENDPOINT + Sift.psp_merchant_api_path(account_id), options)
+      Response.new(response.body, response.code, response.response)
+    end
+
+    def update_psp_merchant_profile(merchant_id, properties = {}, opts = {})
+      # Update an existing PSP Merchant profile
+      #  Args:
+      #      merchant_id: id of merchant
+      #      properties: A dict of merchant profile data.
+      #  Returns
+      #      A sift.client.Response object if the call succeeded, else raises an ApiException
+
+      account_id = opts[:account_id] || @account_id
+      api_key = opts[:api_key] || @api_key
+      timeout = opts[:timeout] || @timeout
+
+      raise("api_key cannot be empty") if api_key.empty?
+      raise("account_id cannot be empty") if account_id.empty?
+      raise("merchant_id cannot be empty") if merchant_id.empty?
+      raise("properties cannot be empty") if properties.empty?
+
+      options = {
+        :body => MultiJson.dump(delete_nils(properties)),
+        :headers => { "User-Agent" => user_agent, "Content-Type" => "application/json" },
+        :basic_auth => { :username => api_key, :password => "" }
+      }
+      options.merge!(:timeout => timeout) unless timeout.nil?
+      response = self.class.put(API_ENDPOINT + Sift.psp_merchant_id_api_path(account_id, merchant_id), options)
+      Response.new(response.body, response.code, response.response)
+    end
+
+  def get_a_psp_merchant_profile(merchant_id, opts = {})
+    # Gets a PSP merchant profile using merchant id.
+    #  Args:
+    #      merchant_id: id of merchant
+    #  Returns
+    #      A sift.client.Response object if the call succeeded, else raises an ApiException
+
+    account_id = opts[:account_id] || @account_id
+    api_key = opts[:api_key] || @api_key
+    timeout = opts[:timeout] || @timeout
+    
+    raise("api_key cannot be empty") if api_key.empty?
+    raise("account_id cannot be empty") if account_id.empty?
+    raise("merchant_id cannot be empty") if merchant_id.empty?
+
+    options = {
+      :headers => { "User-Agent" => user_agent, "Content-Type" => "application/json" },
+      :basic_auth => { :username => api_key, :password => "" }
+    }
+    options.merge!(:timeout => timeout) unless timeout.nil?
+    response = self.class.get(API_ENDPOINT + Sift.psp_merchant_id_api_path(account_id, merchant_id), options)
+    Response.new(response.body, response.code, response.response)
+  end
+
+  def get_psp_merchant_profiles(batch_size = nil, batch_token = nil, opts = {})
+    # Get all PSP merchant profiles.
+    # Args:
+    #  batch_size : Batch or page size of the paginated sequence.
+    #  batch_token : Batch or page position of the paginated sequence.
+    #  Returns
+    #      A sift.client.Response object if the call succeeded, else raises an ApiException
+
+    account_id = opts[:account_id] || @account_id
+    api_key = opts[:api_key] || @api_key
+    timeout = opts[:timeout] || @timeout
+
+    raise("api_key cannot be empty") if api_key.empty?
+    raise("account_id cannot be empty") if account_id.empty?
+
+    query = {}
+    query["batch_size"] = batch_size if batch_size
+    query["batch_token"] = batch_token if batch_token
+
+    options = {
+      :headers => { "User-Agent" => user_agent, "Content-Type" => "application/json" },
+      :basic_auth => { :username => api_key, :password => "" },
+      :query => query
+    }
+    options.merge!(:timeout => timeout) unless timeout.nil?
+    response = self.class.get(API_ENDPOINT + Sift.psp_merchant_api_path(account_id), options)
+    Response.new(response.body, response.code, response.response)
+  end
 
     private
 

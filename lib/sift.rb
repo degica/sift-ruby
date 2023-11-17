@@ -9,6 +9,21 @@ module Sift
     "/v#{version}/events"
   end
 
+  # Returns the path for the specified API version
+  def self.verification_api_send_path(version=API_VERSION)
+    "/v#{version}/verification/send"
+  end
+
+  # Returns the path for the specified API version
+  def self.verification_api_resend_path(version=API_VERSION)
+    "/v#{version}/verification/resend"
+  end
+
+  # Returns the path for the specified API version
+  def self.verification_api_check_path(version=API_VERSION)
+    "/v#{version}/verification/check"
+  end
+
   # Returns the Score API path for the specified user ID and API version
   def self.score_api_path(user_id, version=API_VERSION)
     "/v#{version}/score/#{ERB::Util.url_encode(user_id)}/"
@@ -64,6 +79,18 @@ module Sift
   def self.psp_merchant_id_path(account_id, merchant_id)
     "/v3/accounts/#{ERB::Util.url_encode(account_id)}" \
       "/psp_management/merchants/#{ERB::Util.url_encode(merchant_id)}"
+  end
+
+  # Returns the path for psp Merchant API
+  def self.psp_merchant_api_path(account_id)
+    "/v3/accounts/#{ERB::Util.url_encode(account_id)}" \
+    "/psp_management/merchants"
+  end
+
+  # Returns the path for psp Merchant with id
+  def self.psp_merchant_id_api_path(account_id, merchant_id)
+    "/v3/accounts/#{ERB::Util.url_encode(account_id)}" \
+    "/psp_management/merchants/#{ERB::Util.url_encode(merchant_id)}"
   end
 
   # Module-scoped public API key

@@ -217,6 +217,72 @@ response = client.get_session_decisions('example_user_id', 'example_session_id')
 response = client.get_content_decisions('example_user_id', 'example_order_id')
 ```
 
+## PSP Merchant Management API
+
+To learn more about the decisions endpoint visit our [developer docs](https://sift.com/developers/docs/ruby/psp-merchant-management-api).
+
+```ruby
+# On-board a PSP merchant summary to Sift Platform.
+# Sample psp_merchant_profile
+  properties = {
+    "id": "merchant_id_01000",
+    "name": "Wonderful Payments Inc.",
+    "description": "Wonderful Payments payment provider.",
+    "address": {
+      "name": "Alany",
+      "address_1": "Big Payment blvd, 22",
+      "address_2": "apt, 8",
+      "city": "New Orleans",
+      "region": "NA",
+      "country": "US",
+      "zipcode": "76830",
+      "phone": "0394888320"
+    },
+    "category": "1002",
+    "service_level": "Platinum",
+    "status": "active",
+    "risk_profile": {
+      "level": "low",
+      "score": 10
+    }
+  }
+response = client.create_psp_merchant_profile(properties)
+
+# Update a merchant summary to reflect changes in the status or service level or address etc.
+  properties = {
+    "id": "merchant_id_01000",
+    "name": "Wonderful Payments Inc.",
+    "description": "Wonderful Payments payment provider.",
+    "address": {
+      "name": "Alany",
+      "address_1": "Big Payment blvd, 22",
+      "address_2": "apt, 8",
+      "city": "New Orleans",
+      "region": "NA",
+      "country": "US",
+      "zipcode": "76830",
+      "phone": "0394888320"
+    },
+    "category": "1002",
+    "service_level": "Platinum",
+    "status": "active",
+    "risk_profile": {
+      "level": "low",
+      "score": 10
+    }
+  }
+response = client.update_psp_merchant_profile('merchant_id', properties)
+
+# Get the existing PSP merchant summaries.
+response = client.get_a_psp_merchant_profile('merchant_id')
+
+# Get all PSP merchant summaries
+response = client.get_psp_merchant_profiles()
+
+# Get PSP merchant summaries paginated 
+response = client.get_psp_merchant_profiles('batch_size', 'batch_token')
+```
+
 ## Response Object
 
 All requests to our apis will return a `Response` instance.
@@ -251,4 +317,22 @@ To run the various tests use the rake command as follows:
 
 ```ruby
 $ rake spec
+```
+
+## Integration testing app
+
+For testing the app with real calls it is possible to run the integration testing app,
+it makes calls to almost all our public endpoints to make sure the library integrates
+well. At the moment, the app is run on every merge to master
+
+#### How to run it locally
+
+1. Add env variable `ACCOUNT_ID` with the valid account id
+2. Add env variable `API_KEY` with the valid Api Key associated from the account
+3. Run the following under the project root folder
+```
+# Install the budle locally
+bundle check || bundle install
+# Run the app
+bundle exec ruby test_integration_app/main.rb
 ```
